@@ -24,4 +24,11 @@ from django.urls import path, include
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('blog.urls')),
+    from django.urls import path, include
+import debug_toolbar
+
+urlpatterns = [
+    # your other routes here...
+    path("__debug__/", include(debug_toolbar.urls)),
+]
 ]
