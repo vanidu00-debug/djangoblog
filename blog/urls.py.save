@@ -4,7 +4,6 @@ from . import views
 
 urlpatterns = [
     path("", views.post_list, name="home"),
-    path("register/", views.RegisterView.as_view(), name="register"),
     # "posts/new/" MUST come before "posts/<slug:slug>/"
     path("posts/new/", views.PostCreateView.as_view(), name="post_create"),
     path("posts/<slug:slug>/edit/", views.PostUpdateView.as_view(), name="post_update"),

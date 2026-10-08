@@ -1,6 +1,7 @@
 import random
 import time
 
+from django.contrib.auth import login
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.cache import cache
 from django.core.paginator import Paginator
@@ -9,7 +10,7 @@ from django.shortcuts import get_object_or_404, render
 from django.urls import reverse_lazy
 from django.views.generic import CreateView, UpdateView
 
-from .forms import PostForm
+from .forms import PostForm, RegisterForm
 from .models import Post
 
 DESTINATIONS = {
@@ -38,12 +39,24 @@ def post_detail(request, slug):
     return render(request, "lk/post_detail.html", {"post": post})
 
 
-# ---- NEW: create and edit posts with the PostForm (session 11 + 12) ----
+# ---- Registration (session 14) ----
+class RegisterView(CreateView):
+    form_class = RegisterForm
+    template_name = "lk/register.html"
+    success_url = "/"
+
+    def form_valid(self, form):
+        response = super().form_valid(form)
+        login(self.request, self.object)   # log the new user in straight away
+        return response
+
+
+# ---- create and edit posts with the PostForm (session 11 + 12) ----
 class PostCreateView(LoginRequiredMixin, CreateView):
     model = Post
     form_class = PostForm
     template_name = "lk/post_form.html"
-    login_url = "/admin/login/"          # you are already logged in there
+    login_url = "/login/"
 
     def form_valid(self, form):
         # if your Post has an "author" field, fill it with the logged-in user
@@ -59,7 +72,7 @@ class PostUpdateView(LoginRequiredMixin, UpdateView):
     model = Post
     form_class = PostForm
     template_name = "lk/post_form.html"
-    login_url = "/admin/login/"
+    login_url = "/login/"
 
     def get_success_url(self):
         return reverse_lazy("post_detail", kwargs={"slug": self.object.slug})

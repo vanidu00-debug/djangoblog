@@ -6,6 +6,12 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>{% block title %}Sri Lanka Travel{% endblock %}</title>
 <link rel="stylesheet" href="{% static 'lk/base.css' %}">
+<style>
+  /* Logout button looks like the other nav links */
+  .logout-form { display: inline; margin: 0; }
+  .logout-btn { background: none; border: 0; padding: 0; margin: 0; font: inherit; color: inherit; cursor: pointer; }
+  .logout-btn:hover { text-decoration: underline; }
+</style>
 {% block head %}{% endblock %}
 </head>
 <body>
@@ -17,7 +23,17 @@
     <a href="{% url 'home' %}" class="{% if request.resolver_match.url_name == 'home' %}act{% endif %}">Home</a>
     <a href="{% url 'about' %}" class="{% if request.resolver_match.url_name == 'about' %}act{% endif %}">About</a>
     <a href="{% url 'contact' %}" class="{% if request.resolver_match.url_name == 'contact' %}act{% endif %}">Contact</a>
-    {% if user.is_authenticated %}<a href="{% url 'post_create' %}">+ New post</a>{% endif %}
+    {% if user.is_authenticated %}
+      <a href="{% url 'post_create' %}">+ New post</a>
+      <span>Hi, {{ user.username }}</span>
+      <form method="post" action="{% url 'logout' %}" class="logout-form">
+        {% csrf_token %}
+        <button type="submit" class="logout-btn">Logout</button>
+      </form>
+    {% else %}
+      <a href="{% url 'login' %}" class="{% if request.resolver_match.url_name == 'login' %}act{% endif %}">Login</a>
+      <a href="{% url 'register' %}" class="{% if request.resolver_match.url_name == 'register' %}act{% endif %}">Register</a>
+    {% endif %}
     <span class="pill" id="clock">--:--:--</span><span class="pill">● <span id="on">1</span> online</span>
   </div>
 </nav>
