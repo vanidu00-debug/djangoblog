@@ -1,0 +1,58 @@
+{% extends "lk/base.html" %}
+{% block title %}{% if object %}Edit Post{% else %}New Post{% endif %} – Sri Lanka Travel{% endblock %}
+{% block head %}
+<style>
+  label { display: block; font-weight: 600; color: var(--g1); margin-bottom: 2px; }
+  select { width: 100%; padding: 10px; border-radius: 10px; border: 1px solid #d1d5db; font-size: 1rem; background: #fff; }
+  .err { color: #dc2626; font-size: .85rem; margin-top: 4px; }
+  .alert { background: #fee2e2; color: #991b1b; padding: 10px 14px; border-radius: 10px; margin-bottom: 14px; }
+</style>
+{% endblock %}
+{% block content %}
+<main class="wrap" style="max-width:760px">
+  <h2 class="title">{% if object %}Edit Post{% else %}New Post{% endif %}</h2>
+  <p class="sub">{% if object %}Change your story{% else %}Write a new travel story{% endif %}</p>
+  <div class="card"><div class="cbody">
+
+    {% if form.non_field_errors %}
+      <div class="alert">{{ form.non_field_errors|striptags }}</div>
+    {% endif %}
+
+    <form method="post" enctype="multipart/form-data">
+      {% csrf_token %}
+      {% for field in form %}
+        <div style="margin-bottom:14px">
+          {{ field.label_tag }}
+          {{ field }}
+          {% if field.errors %}<div class="err">{{ field.errors|striptags }}</div>{% endif %}
+        </div>
+      {% endfor %}
+
+      <!-- Live image preview (shows before upload) -->
+      <div style="margin-bottom:14px">
+        <img id="preview" style="max-width:200px; display:none;" class="rounded" alt="Image preview">
+      </div>
+
+      <button type="submit" class="btn">Save</button>
+      <a class="btn orange" href="{% url 'home' %}">Cancel</a>
+    </form>
+
+  </div></div>
+</main>
+
+<script>
+  const fileInput = document.querySelector('input[type="file"]');
+  if (fileInput) {
+    fileInput.addEventListener('change', function (event) {
+      const preview = document.getElementById('preview');
+      const file = event.target.files[0];
+      if (file) {
+        preview.src = URL.createObjectURL(file);
+        preview.style.display = 'block';
+      } else {
+        preview.style.display = 'none';
+      }
+    });
+  }
+</script>
+{% endblock %}

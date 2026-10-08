@@ -1,0 +1,112 @@
+{% extends "lk/base.html" %}
+{% load static %}
+{% block title %}Sri Lanka Travel{% endblock %}
+{% block head %}
+<style>
+  .hero { position: relative; height: 78vh; min-height: 420px; overflow: hidden; color: #fff; display: flex; align-items: center; justify-content: center; text-align: center; }
+  .slide { position: absolute; inset: 0; opacity: 0; transition: opacity 1.6s; background-size: cover; background-position: center; }
+  .slide.on { opacity: 1; }
+  .hero::after { content: ""; position: absolute; inset: 0; background: linear-gradient(#064e3bcc, #064e3b88); }
+  .hero .in { position: relative; z-index: 2; padding: 0 20px; }
+  .hero h1 { font-size: clamp(2.4rem, 8vw, 5rem); text-shadow: 0 4px 20px #0007; }
+  .hero h1 small { font-size: .4em; background: var(--orange); color: #111; padding: 2px 10px; border-radius: 8px; vertical-align: middle; }
+  .hero p { font-size: 1.25rem; margin: 10px 0 24px; min-height: 1.6em; }
+  .hero .btn { margin: 0 6px 8px; }
+  .strip { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 16px; max-width: 1000px; margin: -50px auto 0; padding: 0 20px; position: relative; z-index: 5; }
+  .strip .card { text-align: center; padding: 18px 10px; }
+  .strip small { color: var(--mut); }
+  .bars { display: flex; align-items: flex-end; gap: 12px; height: 220px; padding: 0 6px; }
+  .bar { flex: 1; text-align: center; font-size: .8rem; cursor: pointer; }
+  .bar div { border-radius: 10px 10px 0 0; transition: height .8s; padding-top: 4px; font-weight: bold; color: #fff; }
+  #line { width: 100%; height: 150px; display: block; }
+</style>
+{% endblock %}
+{% block content %}
+<header class="hero">
+  <div class="slide on" style="background-image:url('{% static 'images/photo1.jpg' %}')"></div>
+  <div class="slide" style="background-image:url('{% static 'images/photo2.jpg' %}')"></div>
+  <div class="slide" style="background-image:url('{% static 'images/photo3.jpg' %}')"></div>
+  <div class="slide" style="background-image:url('{% static 'images/photo4.jpg' %}')"></div>
+  <div class="slide" style="background-image:url('{% static 'images/photo5.jpg' %}')"></div>
+  <div class="in">
+    <h1>Discover Sri Lanka <small>LK</small></h1>
+    <p id="typed"></p>
+    <a class="btn orange" href="#stories">Explore Stories</a>
+    <a class="btn light" href="#live">Live dashboard</a>
+  </div>
+</header>
+
+<div class="strip">
+  <div class="card"><div class="stat">{{ page_obj.paginator.count }}</div><small>Travel stories</small></div>
+  <div class="card"><div class="stat" id="on2">1</div><small>Visitors online</small></div>
+  <div class="card"><div class="stat">5</div><small>Places to explore</small></div>
+  <div class="card"><div class="stat" id="sec">0</div><small>Seconds on page</small></div>
+</div>
+
+<section class="wrap" id="stories">
+  <h2 class="title">Latest Travel Stories</h2>
+  <p class="sub">Discover beautiful places around Sri Lanka</p>
+  <div class="grid">
+    {% for p in page_obj %}
+    <a class="card post reveal" href="{% url 'post_detail' p.slug %}">
+      <div class="thumb">{% if p.image %}<img src="{{ p.image.url }}" alt="">{% else %}🌴{% endif %}</div>
+      <div class="cbody">
+        {% if p.category %}<span class="chip">{{ p.category }}</span>{% endif %}
+        <h3>{{ p.title }}</h3>
+        <p>{{ p.content|truncatewords:18 }}</p>
+        <span class="btn" style="margin-top:8px">Read More →</span>
+      </div>
+    </a>
+    {% empty %}<div class="card"><div class="cbody">No stories yet. Add posts in the admin.</div></div>{% endfor %}
+  </div>
+  <div class="pager">
+    {% if page_obj.has_previous %}<a href="?page={{ page_obj.previous_page_number }}#stories">← Prev</a>{% endif %}
+    <span>{{ page_obj.number }}</span>
+    {% if page_obj.has_next %}<a href="?page={{ page_obj.next_page_number }}#stories">Next →</a>{% endif %}
+  </div>
+</section>
+
+<section class="wrap" id="live" style="padding-top:0">
+  <h2 class="title"><span class="pulse"></span>Live interest</h2>
+  <p class="sub">Click a bar to open that place</p>
+  <div class="two">
+    <div class="card"><div class="cbody"><div class="bars" id="bars"></div></div></div>
+    <div class="card"><div class="cbody"><div>Total visitors now</div><div class="stat" id="tot">0</div><div style="margin-top:12px;color:var(--mut)">Updates every 2 seconds from Python</div></div></div>
+  </div>
+  <div class="card" style="margin-top:22px"><div class="cbody"><canvas id="line"></canvas></div></div>
+</section>
+{% endblock %}
+{% block scripts %}
+<script>
+/* hero: rotating sentence + photo slideshow */
+const W = ['Explore the island of paradise', 'Beaches at sunrise', 'Misty mountains', 'Wild elephants', 'Ancient culture'];
+let wi = 0, ci = 0, dl = false;
+(function t() {
+  const w = W[wi]; $('typed').textContent = w.slice(0, ci);
+  if (!dl && ci++ === w.length) { dl = true; return setTimeout(t, 1800); }
+  if (dl && --ci === 0) { dl = false; wi = (wi + 1) % W.length; }
+  setTimeout(t, dl ? 35 : 80);
+})();
+const S = [...document.querySelectorAll('.slide')]; let cur = 0;
+setInterval(() => { cur = (cur + 1) % S.length; S.forEach((s, k) => s.classList.toggle('on', k === cur)); }, 4000);
+let s = 0; setInterval(() => $('sec').textContent = ++s, 1000);
+
+/* live bar chart: click a bar to open its page */
+const N = ['Beaches', 'Mountains', 'Wildlife', 'Culture', 'Food'], hist = [];
+const COL = ['#047857', '#0e9f6e', '#f59e0b', '#0891b2', '#dc2626'];
+N.forEach(n => $('bars').insertAdjacentHTML('beforeend', `<div class="bar" title="Click to open"><div style="height:10px"></div>${n}</div>`));
+$('bars').onclick = e => { const b = e.target.closest('.bar'); if (b) location.href = '/destination/' + N[[...$('bars').children].indexOf(b)].toLowerCase() + '/'; };
+const lc = $('line'), lx = lc.getContext('2d');
+async function upd() {
+  let v;
+  try { v = (await (await fetch('/api/live/')).json()).values; } catch { v = N.map(() => Math.floor(Math.random() * 95) + 5); }
+  const mx = Math.max(...v), sum = v.reduce((a, b) => a + b, 0);
+  [...$('bars').children].forEach((b, i) => { const d = b.firstElementChild; d.style.height = v[i] / mx * 190 + 10 + 'px'; d.style.background = COL[i]; d.textContent = v[i]; });
+  $('tot').textContent = sum; hist.push(sum); if (hist.length > 40) hist.shift();
+  lc.width = lc.clientWidth * 2; lc.height = lc.clientHeight * 2; lx.lineWidth = 5; lx.strokeStyle = '#047857'; lx.beginPath();
+  const m = Math.max(...hist), st = lc.width / 39;
+  hist.forEach((x, i) => { const px = i * st, py = lc.height - x / m * (lc.height - 20) - 10; i ? lx.lineTo(px, py) : lx.moveTo(px, py); }); lx.stroke();
+}
+upd(); setInterval(upd, 2000);
+</script>
+{% endblock %}

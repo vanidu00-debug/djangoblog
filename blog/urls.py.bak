@@ -4,13 +4,12 @@ from . import views
 
 urlpatterns = [
     path("", views.post_list, name="home"),
-    # "posts/new/" MUST come before "posts/<slug:slug>/"
-    path("posts/new/", views.PostCreateView.as_view(), name="post_create"),
-    path("posts/<slug:slug>/edit/", views.PostUpdateView.as_view(), name="post_update"),
     path("posts/<slug:slug>/", views.post_detail, name="post_detail"),
     path("about/", views.about, name="about"),
     path("contact/", views.contact, name="contact"),
+    # new: pages opened from the chart bars
     path("destination/<slug:slug>/", views.destination, name="destination"),
+    # new: live data for JavaScript
     path("api/live/", views.live_data),
     path("api/live/<slug:slug>/", views.destination_live),
     path("api/online/", views.online),

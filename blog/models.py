@@ -1,5 +1,6 @@
 from django.db import models
 from django.utils.text import slugify
+from PIL import Image
 
 
 class Category(models.Model):
@@ -25,6 +26,8 @@ class Post(models.Model):
     title = models.CharField(max_length=200)
     slug = models.SlugField(unique=True, blank=True)
     content = models.TextField()
+
+    image = models.ImageField(upload_to="posts/", blank=True, null=True)
 
     status = models.CharField(
         max_length=10,
@@ -52,7 +55,13 @@ class Post(models.Model):
     def save(self, *args, **kwargs):
         if not self.slug:
             self.slug = slugify(self.title)
-        super().save(*args, **kwargs)
+        super().save(*args, **kwargs)  # must run first so the file exists on disk
+        if self.image:
+            img_path = self.image.path
+            img = Image.open(img_path)
+            if img.height > 800 or img.width > 800:
+                img.thumbnail((800, 800))
+                img.save(img_path)
 
     def __str__(self):
         return self.title

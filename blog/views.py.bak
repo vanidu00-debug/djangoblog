@@ -1,15 +1,11 @@
 import random
 import time
 
-from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.cache import cache
 from django.core.paginator import Paginator
 from django.http import Http404, JsonResponse
 from django.shortcuts import get_object_or_404, render
-from django.urls import reverse_lazy
-from django.views.generic import CreateView, UpdateView
 
-from .forms import PostForm
 from .models import Post
 
 DESTINATIONS = {
@@ -38,33 +34,6 @@ def post_detail(request, slug):
     return render(request, "lk/post_detail.html", {"post": post})
 
 
-# ---- NEW: create and edit posts with the PostForm (session 11 + 12) ----
-class PostCreateView(LoginRequiredMixin, CreateView):
-    model = Post
-    form_class = PostForm
-    template_name = "lk/post_form.html"
-    login_url = "/admin/login/"          # you are already logged in there
-
-    def form_valid(self, form):
-        # if your Post has an "author" field, fill it with the logged-in user
-        if any(f.name == "author" for f in Post._meta.get_fields()):
-            form.instance.author = self.request.user
-        return super().form_valid(form)
-
-    def get_success_url(self):
-        return reverse_lazy("post_detail", kwargs={"slug": self.object.slug})
-
-
-class PostUpdateView(LoginRequiredMixin, UpdateView):
-    model = Post
-    form_class = PostForm
-    template_name = "lk/post_form.html"
-    login_url = "/admin/login/"
-
-    def get_success_url(self):
-        return reverse_lazy("post_detail", kwargs={"slug": self.object.slug})
-
-
 def about(request):
     return render(request, "lk/about.html")
 
@@ -72,6 +41,7 @@ def about(request):
 def contact(request):
     sent = False
     if request.method == "POST":
+        # Message is printed in the terminal. Later you can save it or e-mail it.
         print("CONTACT:", request.POST.get("name"), request.POST.get("email"), request.POST.get("message"))
         sent = True
     return render(request, "lk/contact.html", {"sent": sent})

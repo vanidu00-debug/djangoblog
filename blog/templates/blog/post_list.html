@@ -1,0 +1,154 @@
+{% extends "blog/base.html" %}
+
+{% block title %}
+Sri Lanka Travel Blog
+{% endblock %}
+
+
+{% block content %}
+
+
+<!-- HERO -->
+
+<section class="hero">
+
+    <div>
+
+        <h1>Discover Sri Lanka 🇱🇰</h1>
+
+        <p>
+            Explore the island of paradise
+        </p>
+
+        <a href="#stories"
+           class="btn hero-button">
+            Explore Stories
+        </a>
+
+    </div>
+
+</section>
+
+
+<!-- POSTS -->
+
+<div class="container"
+     id="stories">
+
+    <div class="section-title">
+
+        <h2>Latest Travel Stories</h2>
+
+        <p>
+            Discover beautiful places around Sri Lanka
+        </p>
+
+    </div>
+
+
+    <div class="row g-4">
+
+        {% for post in page_obj %}
+
+        <div class="col-lg-4 col-md-6">
+
+            <div class="card post-card">
+
+                <div class="card-body">
+
+                    <h4 class="card-title">
+                        {{ post.title }}
+                    </h4>
+
+                    <p class="card-text text-muted">
+
+                        {{ post.content|truncatewords:25 }}
+
+                    </p>
+
+                    <a href="{% url 'post_detail' post.slug %}"
+                       class="btn read-btn">
+
+                        Read More →
+
+                    </a>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        {% empty %}
+
+        <div class="text-center">
+
+            <h4>No travel stories yet.</h4>
+
+        </div>
+
+        {% endfor %}
+
+    </div>
+
+
+    <!-- PAGINATION -->
+
+    <div class="d-flex justify-content-center mt-5">
+
+        <nav>
+
+            <ul class="pagination">
+
+                {% if page_obj.has_previous %}
+
+                <li class="page-item">
+
+                    <a class="page-link"
+                       href="?page={{ page_obj.previous_page_number }}">
+
+                        ← Previous
+
+                    </a>
+
+                </li>
+
+                {% endif %}
+
+
+                <li class="page-item active">
+
+                    <span class="page-link">
+
+                        {{ page_obj.number }}
+
+                    </span>
+
+                </li>
+
+
+                {% if page_obj.has_next %}
+
+                <li class="page-item">
+
+                    <a class="page-link"
+                       href="?page={{ page_obj.next_page_number }}">
+
+                        Next →
+
+                    </a>
+
+                </li>
+
+                {% endif %}
+
+            </ul>
+
+        </nav>
+
+    </div>
+
+</div>
+
+
+{% endblock %}

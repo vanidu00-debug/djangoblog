@@ -1,0 +1,43 @@
+{% extends "lk/base.html" %}
+{% load static %}
+{% block title %}{{ d.name }} – Sri Lanka Travel{% endblock %}
+{% block head %}
+<style>
+  .dhero { height: 42vh; min-height: 260px; background: url("{% static d.photo %}") center/cover; position: relative; display: flex; align-items: flex-end; color: #fff; }
+  .dhero::after { content: ""; position: absolute; inset: 0; background: linear-gradient(#064e3b33, #064e3bcc); }
+  .dhero h1 { position: relative; z-index: 1; font-size: clamp(2.4rem, 8vw, 4.5rem); padding: 0 6% 26px; text-shadow: 0 4px 20px #0008; }
+  #dl { width: 100%; height: 160px; display: block; }
+</style>
+{% endblock %}
+{% block content %}
+<header class="dhero"><h1>{{ d.emoji }} {{ d.name }}</h1></header>
+<main class="wrap">
+  <p>{{ d.text }}</p>
+  <p>Best time to go: <b>{{ d.best }}</b></p>
+  <a class="btn" href="{% url 'home' %}">← Back to home</a>
+  <a class="btn orange" href="{% url 'destination' next %}">Next place →</a>
+  <div class="two" style="margin-top:22px">
+    <div class="card"><div class="cbody"><div style="margin-bottom:6px"><span class="pulse"></span>Live interest: <b id="now">0</b></div><canvas id="dl"></canvas></div></div>
+    <div class="card"><div class="cbody"><h3>Plan this trip</h3>
+      <label>Days: <b id="dv">5</b></label><input type="range" id="days" min="1" max="21" value="5">
+      <label>USD per day: <b id="bv">80</b></label><input type="range" id="bud" min="20" max="300" step="10" value="80">
+      <div>Total estimate</div><div class="stat" id="tt">$400</div></div></div>
+  </div>
+</main>
+{% endblock %}
+{% block scripts %}
+<script>
+const hs = [], c = $('dl'), x = c.getContext('2d');
+async function tick() {
+  let v;
+  try { v = (await (await fetch('/api/live/{{ slug }}/')).json()).value; } catch { v = Math.floor(Math.random() * 95) + 5; }
+  hs.push(v); if (hs.length > 40) hs.shift(); $('now').textContent = v;
+  c.width = c.clientWidth * 2; c.height = c.clientHeight * 2; x.lineWidth = 5; x.strokeStyle = '#047857'; x.beginPath();
+  const m = Math.max(...hs, 1), st = c.width / 39;
+  hs.forEach((h, i) => { const px = i * st, py = c.height - h / m * (c.height - 20) - 10; i ? x.lineTo(px, py) : x.moveTo(px, py); }); x.stroke();
+}
+tick(); setInterval(tick, 1000);
+const calc = () => { $('dv').textContent = $('days').value; $('bv').textContent = $('bud').value; $('tt').textContent = '$' + ($('days').value * $('bud').value).toLocaleString(); };
+$('days').oninput = calc; $('bud').oninput = calc;
+</script>
+{% endblock %}

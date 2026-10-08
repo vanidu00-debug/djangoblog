@@ -2,8 +2,9 @@
 {% block title %}Contact – Sri Lanka Travel{% endblock %}
 {% block content %}
 <main class="wrap" style="max-width:640px">
-  <h2>Contact</h2>
-  <div class="card">
+  <h2 class="title">Contact</h2>
+  <p class="sub">Send us a message</p>
+  <div class="card"><div class="cbody">
     {% if sent %}
       <div class="stat">Thank you! 🌴</div><p>Your message was received.</p>
     {% else %}
@@ -14,6 +15,6 @@
         <button class="btn" type="submit">Send</button>
       </form>
     {% endif %}
-  </div>
+  </div></div>
 </main>
 {% endblock %}
