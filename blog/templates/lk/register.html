@@ -1,0 +1,14 @@
+{% extends "lk/base.html" %}
+{% block title %}Register – Sri Lanka Travel{% endblock %}
+{% block content %}
+<main class="wrap" style="max-width:760px">
+  <h2 class="title">Create an account</h2>
+  <div class="card"><div class="cbody">
+    <form method="post">
+      {% csrf_token %}
+      {{ form.as_p }}
+      <button type="submit" class="btn">Register</button>
+    </form>
+  </div></div>
+</main>
+{% endblock %}
