@@ -4,7 +4,10 @@
 {% block content %}
 <main class="wrap" style="max-width:820px">
   <a class="btn" href="{% url 'home' %}">← Back to stories</a>
-  {% if user.is_authenticated %}<a class="btn orange" href="{% url 'post_update' post.slug %}">Edit</a>{% endif %}
+  {% if user.is_authenticated and user == post.author or user.is_superuser %}
+    <a class="btn orange" href="{% url 'post_update' post.slug %}">Edit</a>
+    <a class="btn alt" href="{% url 'post_delete' post.slug %}">Delete</a>
+  {% endif %}
   <h1 style="margin:18px 0;color:var(--g1);font-size:clamp(2rem,6vw,3.2rem)">{{ post.title }}</h1>
   {% if post.image %}<img src="{{ post.image.url }}" alt="" style="width:100%;max-height:420px;object-fit:cover;border-radius:18px;margin-bottom:18px">{% endif %}
   <div class="card"><div class="cbody">{{ post.content|linebreaks }}</div></div>

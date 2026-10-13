@@ -1,14 +1,16 @@
+from django.contrib import messages
+from django.db import models
 import random
 import time
 
 from django.contrib.auth import login
-from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.core.cache import cache
 from django.core.paginator import Paginator
 from django.http import Http404, JsonResponse
 from django.shortcuts import get_object_or_404, render
 from django.urls import reverse_lazy
-from django.views.generic import CreateView, UpdateView
+from django.views.generic import CreateView, DeleteView, UpdateView
 
 from .forms import PostForm, RegisterForm
 from .models import Post
@@ -51,7 +53,7 @@ class RegisterView(CreateView):
         return response
 
 
-# ---- create and edit posts with the PostForm (session 11 + 12) ----
+# ---- create, edit and delete posts ----
 class PostCreateView(LoginRequiredMixin, CreateView):
     model = Post
     form_class = PostForm
@@ -62,13 +64,23 @@ class PostCreateView(LoginRequiredMixin, CreateView):
         # if your Post has an "author" field, fill it with the logged-in user
         if any(f.name == "author" for f in Post._meta.get_fields()):
             form.instance.author = self.request.user
+        messages.success(self.request, "Post published successfully!")
         return super().form_valid(form)
 
     def get_success_url(self):
         return reverse_lazy("post_detail", kwargs={"slug": self.object.slug})
 
 
-class PostUpdateView(LoginRequiredMixin, UpdateView):
+class AuthorRequiredMixin(UserPassesTestMixin):
+    """Only the post's author (or a superuser) may continue."""
+
+    def test_func(self):
+        post = self.get_object()
+        user = self.request.user
+        return user.is_superuser or post.author == user
+
+
+class PostUpdateView(LoginRequiredMixin, AuthorRequiredMixin, UpdateView):
     model = Post
     form_class = PostForm
     template_name = "lk/post_form.html"
@@ -76,6 +88,13 @@ class PostUpdateView(LoginRequiredMixin, UpdateView):
 
     def get_success_url(self):
         return reverse_lazy("post_detail", kwargs={"slug": self.object.slug})
+
+
+class PostDeleteView(LoginRequiredMixin, AuthorRequiredMixin, DeleteView):
+    model = Post
+    template_name = "lk/post_confirm_delete.html"
+    success_url = reverse_lazy("home")
+    login_url = "/login/"
 
 
 def about(request):
@@ -117,3 +136,6 @@ def online(request):
     users = {k: v for k, v in users.items() if now - v < 15}
     cache.set("online", users, 60)
     return JsonResponse({"online": len(users)})
+
+def custom_403(request, exception=None):
+    return render(request, 'blog/403.html', status=403)

@@ -1,0 +1,15 @@
+{% extends "lk/base.html" %}
+{% block title %}Delete Post – Sri Lanka Travel{% endblock %}
+{% block content %}
+<main class="wrap" style="max-width:760px">
+  <h2 class="title">Delete post?</h2>
+  <div class="card"><div class="cbody">
+    <p>Are you sure you want to delete <strong>{{ object.title }}</strong>? This cannot be undone.</p>
+    <form method="post" style="margin-top:14px">
+      {% csrf_token %}
+      <button type="submit" class="btn" style="background:#dc2626">Yes, delete</button>
+      <a class="btn orange" href="{% url 'post_detail' object.slug %}">Cancel</a>
+    </form>
+  </div></div>
+</main>
+{% endblock %}
